@@ -1,0 +1,60 @@
+@{
+/*
+ *	
+ *
+ *	DESC: Index view for testing search functionality for data type - Person
+ *
+ *	NOTES: Created with MVC Scaffolding https://www.nuget.org/packages/MvcScaffolding/
+ *			using a custom scaffolder called "Search" with the Package Manager Console command line:  
+ *
+ *				Scaffold Search Person -DbContextType PersonContext -ControllerName Person -Force
+ *
+ *	History
+ *	==============================================================================
+ *	2016/01/11	Scaf	Created.
+ *
+*/
+}
+
+@*
+@Html.Action("Search", new  { showAll = true })
+
+	***** Uncomment this and delete this line and below to make this a search page instead of a search popup. 
+
+	If you are only using the search popup you may remove the index action and view from the project.
+*@
+
+@{
+	var formView = "person-idx";
+	var selectFunc = "Update_" + formView.Replace("-", "_") + "_OnSelect";
+	var searchAction = Url.Action("Search", "Person", new { id = "**", formView = formView, funcSelect = selectFunc, showAll = true });
+}
+
+<h2>Test Person Search</h2>
+<input id="selectID" type="hidden" value="" />
+
+<table>
+	<tr>
+		<th>Parent ID:</th>
+		<td><input id ="person-parent-id" type="text" value="" /></td>
+		<td><a href="#" onclick="return Person_Search_Index('@searchAction');" >Search</a></td>
+	</tr>
+	<tr>
+		<th>Selected ID:</th>
+		<td><div id="select-id-display"></div></td>
+		<td></td>
+	</tr>
+</table>
+
+<script type="text/javascript">
+	function Person_Search_Index (action)
+	{
+		var parentID = $("#person-parent-id").val();
+		return OpenForm(null, '@formView', action.replace("**", parentID));
+	}
+
+	function @(selectFunc)(selectID) {
+		$("#selectID").attr('value', selectID);
+		$("#select-id-display").html(selectID);
+	}
+</script>

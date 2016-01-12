@@ -1,0 +1,96 @@
+@{
+/*
+ *	 
+ *
+ *	DESC: Delete View for to work with Search - Search_PersonDTO
+ *
+ *	NOTES: Created with MVC Scaffolding https://www.nuget.org/packages/MvcScaffolding/
+ *			using a custom scaffolder called "Search" with the Package Manager Console command line:  
+ *
+ *				Scaffold Search Person -DbContextType PersonContext -ControllerName Person -Force
+ *
+ *	History
+ *	==============================================================================
+ *	2016/01/11	Scaf	Created.
+*/
+}
+@model SCRUD_MVC4.Models.Person
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<fieldset class="app-fieldset popup-width-std">
+    <legend>Person</legend>
+
+	<div class="editor-row">
+		<div class="editor-column-4 label display-label">
+			@Html.LabelFor(model => model.formView)
+		</div>
+		<div class="editor-column-w display-field">
+			@Html.DisplayFor(model => model.formView)<br />
+		</div>
+	</div>
+
+	<div class="editor-row">
+		<div class="editor-column-4 label display-label">
+			@Html.LabelFor(model => model.funcRefresh)
+		</div>
+		<div class="editor-column-w display-field">
+			@Html.DisplayFor(model => model.funcRefresh)<br />
+		</div>
+	</div>
+
+	<div class="editor-row">
+		<div class="editor-column-4 label display-label">
+			@Html.LabelFor(model => model.FirstName)
+		</div>
+		<div class="editor-column-w display-field">
+			@Html.DisplayFor(model => model.FirstName)<br />
+		</div>
+	</div>
+
+	<div class="editor-row">
+		<div class="editor-column-4 label display-label">
+			@Html.LabelFor(model => model.LastName)
+		</div>
+		<div class="editor-column-w display-field">
+			@Html.DisplayFor(model => model.LastName)<br />
+		</div>
+	</div>
+
+	<div class="editor-row">
+		<div class="editor-column-4 label display-label">
+			@Html.LabelFor(model => model.DoB)
+		</div>
+		<div class="editor-column-w display-field">
+			@Html.DisplayFor(model => model.DoB)<br />
+		</div>
+	</div>
+
+	<div class="editor-row">
+		<div class="editor-column-4 label display-label">
+			@Html.LabelFor(model => model.GenderID)
+		</div>
+		<div class="editor-column-w display-field">
+			@Html.DisplayFor(model => model.GenderID)<br />
+		</div>
+	</div>
+</fieldset>
+@{
+	string dialog = (string.IsNullOrWhiteSpace(Model.formView) ? "person-dlg" : Model.formView.ToLower().Replace("_", "-")); // View Container Name
+	string funcRefresh = string.IsNullOrWhiteSpace(Model.funcRefresh as string) ? null : Model.funcRefresh as string;
+	string funcDelete = "Delete_" + dialog.Replace("-", "_");
+	string formID = dialog + "-frm";	
+}
+@using (Html.BeginForm("Delete", "Person", FormMethod.Post, new { id = formID, name = formID })) {
+    <p style="text-align:center">
+       <input type="button" value="Delete" onclick="return @(funcDelete)(this);" /> 
+    </p>
+}
+
+<script type="text/javascript">
+    function @(funcDelete)(btn) {
+        PostForm('@dialog', '@formID', @if(funcRefresh == null) { <text>null</text> } else { <text>function () { @funcRefresh (null); }</text> }, function () { btn.disabled = false; }, function () { btn.disabled = true; });
+        return false;
+    }
+</script>

@@ -1,0 +1,88 @@
+@{
+/*
+ *	
+ *
+ *	DESC: Search View for DTO Class - Search_PersonDTO
+ *
+ *	NOTES: Created with MVC Scaffolding https://www.nuget.org/packages/MvcScaffolding/
+ *			using a custom scaffolder called "Search" with the Package Manager Console command line:  
+ *
+ *				Scaffold Search Person -DbContextType PersonContext -ControllerName Person -Force
+ *
+ *	History
+ *	==============================================================================
+ *	2016/01/11	Scaf	Created.
+ *
+*/
+}
+@model SCRUD_MVC4.Models.Search_PersonDTO
+@if(!string.IsNullOrWhiteSpace( Model.funcParentSelect)) {
+<h2 style="margin-bottom:5px;">Select Person</h2> }
+<div class="search-form">
+	@using (Html.BeginForm("Search", "Person", FormMethod.Post, new { id = Model.FormID, name = Model.FormID }))
+	{
+		@Html.AntiForgeryToken()
+		@Html.ValidationSummary(true)
+
+		@* Pagination data for postback *@
+		@Html.Partial("PaginatorDTO", Model)
+	
+		<fieldset class="app-fieldset popup-width-std">
+			<legend>Search Person</legend>
+
+			<div class="search-box">
+				
+				<div class="editor-row">
+					<div class="editor-column-4 label editor-label">
+						@Html.LabelFor(model => model.Term1)
+					</div>
+					<div class="editor-column-4 data editor-field">
+						@Html.EditorFor(model => model.Term1)<br />
+						@Html.ValidationMessageFor(model => model.Term1)
+					</div>		
+
+					<div class="editor-column-4 label editor-label">
+						@Html.LabelFor(model => model.Term2)
+					</div>
+					<div class="editor-column-4 data editor-field">
+						@Html.EditorFor(model => model.Term2)<br />
+						@Html.ValidationMessageFor(model => model.Term2)
+					</div>
+				</div>
+
+				<div class="editor-row">
+					<div class="editor-column-4 label editor-label">
+						@Html.LabelFor(model => model.Term3)
+					</div>
+					<div class="editor-column-4 data editor-field">
+						@Html.EditorFor(model => model.Term3)<br />
+						@Html.ValidationMessageFor(model => model.Term3)
+					</div>
+
+					<div class="editor-column-4 label editor-label">
+						@Html.LabelFor(model => model.Term4)
+					</div>
+					<div class="editor-column-4 data editor-field">
+						@Html.EditorFor(model => model.Term4)<br />
+						@Html.ValidationMessageFor(model => model.Term4)
+					</div>
+				</div>
+
+			</div>
+
+			<p style="text-align:center">
+				<input type="button" value="Search" onclick="return LoadSearchResults('@Model.Page', '@Model.FormID');" />
+				<input type="reset" value="Reset" style="margin-left:40px;" />
+			</p>
+
+		</fieldset>
+	}
+
+	<div id="@Model.ResultView">
+	@if (Model.results != null)
+	{
+		@Html.Partial("SearchResults", Model)
+	}
+	</div>
+</div>
+

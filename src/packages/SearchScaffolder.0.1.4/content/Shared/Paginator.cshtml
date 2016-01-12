@@ -1,0 +1,55 @@
+﻿@{
+	/*
+	 *	© 2015 Florida Division of Emergency Management. All rights reserved.
+	 *	
+	 *	DESC: View for generating records set navigation 
+	 *	
+	 *	History
+	 *	================================================================================
+	 *	2015/08/05	G.K.	Created.
+	*/
+}
+@model DEM.Utilities.SearchDTO
+
+@{
+	// Try to display four pages around the current page
+	string disablePF = Model.Page < 2 ? "disabled='disabled'" : "";
+	string classPF = Model.Page == 1 ? "page-first-disabled" : "page-first";
+	string disablePP = Model.Page == 1 ? "disabled='disabled'" : "";
+	string classPP = Model.Page == 1 ? "page-prev-disabled" : "page-prev";
+	string disablePN = Model.PageLast == Model.Page ? "disabled='disabled'" : "";
+	string classPN = Model.PageLast == Model.Page ? "page-next-disabled" : "page-next";
+	string disablePL = Model.PageLast - Model.Page < 2 ? "disabled='disabled'" : "";
+	string classPL = Model.PageLast - Model.Page < 2 ? "page-last-disabled" : "page-last";
+}
+
+@if (Model.recCount > Model.recsPerPage)
+{
+	<table class="GridTablePaginator" style="width:100%">
+		<tr>
+			<td>
+				<div>Page @Model.Page of @Model.PageLast (@Model.recCount items)</div>
+				<div @disablePF><a href="#" onclick="LoadSearchResults('@Model.PageFirst', '@Model.FormID', null, false); return false;" class="@classPF">First Page</a></div>
+				<div @disablePP><a href="#" onclick="LoadSearchResults('@Model.GroupPagePrev', '@Model.FormID', null, false); return false;" class="@classPP">Previous Page</a></div>
+
+	@{
+		var start = Model.PageRangeStart;
+		var end = Model.PageRangeEnd;
+	}
+
+	@for (int i = start; i <= end; ++i)
+	{
+				<div>
+		@if (Model.Page != i) { 
+		<a href="#" onclick="LoadSearchResults('@i', '@Model.FormID', null, false); return false;" class="page">@i</a> }
+	else
+	{ <strong>@i</strong> }
+				</div>
+	} 
+				<div @disablePN><a href="#" onclick="LoadSearchResults('@Model.GroupPageNext', '@Model.FormID', null, false); return false;" class="@classPN">Next Page</a></div>
+				<div @disablePL><a href="#" onclick="LoadSearchResults('@Model.PageLast', '@Model.FormID', null, false); return false;" class="@classPL">Last Page</a></div>
+			</td>
+		</tr>
+	</table>
+}
+

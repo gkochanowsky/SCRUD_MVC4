@@ -1,0 +1,183 @@
+﻿<#@ template language="C#" HostSpecific="True"  inherits="DynamicTransform" #>
+<#@ Output Extension="cs" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="EnvDTE" #>
+<# 	var dt = DateTime.Now.ToShortDateString(); #>
+/*
+	© 2014 Florida Division of Emergency Management. All rights reserved.
+
+	Desc: Model Controller referencing model repository with partial view popups.
+
+	History
+	==============================================================================
+	<#= dt #>	Scaf	Created.
+*/
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+<# if(!string.IsNullOrEmpty(Model.ModelTypeNamespace)) { #>
+using <#= Model.ModelTypeNamespace #>;
+<# } #>
+<# if((!string.IsNullOrEmpty(Model.RepositoriesNamespace)) && (Model.RepositoriesNamespace != Model.ModelTypeNamespace)) { #>
+using <#= Model.RepositoriesNamespace #>;
+<# } #>
+
+namespace <#= Model.ControllerNamespace #>
+{   
+<#  
+	var modelType = (CodeType)Model.ModelType; 
+	var modelName = modelType.Name; 
+	var modelNamePlural = Model.ModelTypePluralized; 
+	var modelVariable = modelName.ToLower(); 
+	var relatedEntities = ((IEnumerable)Model.RelatedEntities).OfType<RelatedEntityInfo>();
+	var primaryKeyProperty = modelType.VisibleMembers().OfType<CodeProperty>().Single(x => x.Name == Model.PrimaryKey);
+	var routingName = Regex.Replace(Model.ControllerName, "Controller$", "", RegexOptions.IgnoreCase);
+#>
+	public class <#= Model.ControllerName #> : Controller
+	{
+<# foreach(var repository in Repositories.Values) { #>
+		public readonly I<#= repository.RepositoryTypeName #> <#= repository.VariableName #>;
+<# } #>
+
+		public <#= Model.ControllerName #>()
+		{
+<# foreach(var repository in Repositories.Values) { #>
+			this.<#= repository.VariableName #> = new <#= repository.RepositoryTypeName #>(this);
+<# } #>
+		}
+
+		//
+		// GET: /<#= routingName #>/
+
+		public ViewResult Index()
+		{
+			return View(<#= Repositories[modelType.FullName].VariableName #>.All);
+		}
+
+		// Uncomment this after running search custom scaffolder: 
+/*
+		public ViewResult IndexSearch()
+		{
+			return View(new Search_<#= modelName #>DTO());
+		}
+
+		[OutputCache(Location = System.Web.UI.OutputCacheLocation.None)]
+		public ActionResult Search(string formView = null)
+		{
+			var dto = new Search_<#= modelName #>DTO { FormView = formView };
+			return PartialView(dto);
+		}
+
+		[HttpPost]
+		public ActionResult Search(Search_<#= modelName #>DTO search)
+		{
+			ModelState.Clear();
+			var refreshView = search.refreshAll;
+			return PartialView(refreshView ? "Search" : "SearchResults", <#= Repositories[modelType.FullName].VariableName #>.Search(search));
+		}
+*/
+		public ActionResult Details()
+		{
+			return PartialView(<#= Repositories[modelType.FullName].VariableName #>.All);
+		}
+
+		//
+		// GET: /<#= routingName #>/Create
+
+		public ActionResult Create()
+		{
+			return PartialView(<#= Repositories[modelType.FullName].VariableName #>.New());
+		} 
+
+		//
+		// POST: /<#= routingName #>/Create
+
+		[HttpPost]
+		public ActionResult Create(<#= modelName #> <#= modelVariable #>)
+		{
+			if (ModelState.IsValid &&  <#= Repositories[modelType.FullName].VariableName #>.InsertOrUpdate(<#= modelVariable #>)) 
+				return Content("SUCCESS");
+
+			return PartialView(<#= modelVariable #>);	
+		}
+        
+		//
+		// GET: /<#= routingName #>/Edit/5
+ 
+		public ActionResult Edit(<#= primaryKeyProperty.Type.AsString #> id)
+		{
+				return PartialView(<#= Repositories[modelType.FullName].VariableName #>.Find(id));
+		}
+
+		//
+		// POST: /<#= routingName #>/Edit/5
+
+		[HttpPost]
+		public ActionResult Edit(<#= modelName #> <#= modelVariable #>)
+		{
+			if (ModelState.IsValid &&  <#= Repositories[modelType.FullName].VariableName #>.InsertOrUpdate(<#= modelVariable #>)) 
+				return Content("SUCCESS");
+
+			return PartialView(<#= modelVariable #>);
+		}
+
+		//
+		// GET: /<#= routingName #>/Delete/5
+ 
+		public ActionResult Delete(<#= primaryKeyProperty.Type.AsString #> id)
+		{
+			return PartialView(<#= Repositories[modelType.FullName].VariableName #>.Find(id));
+		}
+
+		//
+		// POST: /<#= routingName #>/Delete/5
+
+		[HttpPost, ActionName("Delete")]
+		public ActionResult DeleteConfirmed(<#= primaryKeyProperty.Type.AsString #> id)
+		{
+			if(<#= Repositories[modelType.FullName].VariableName #>.Delete(id))
+				return Content("SUCCESS");
+
+			return PartialView("Delete", <#= Repositories[modelType.FullName].VariableName #>.Find(id));
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing) {
+<# foreach(var repository in Repositories.Values) { #>
+				<#= repository.VariableName #>.Dispose();
+<# } #>
+			}
+			base.Dispose(disposing);
+		}
+	}
+}
+
+<#+
+class RepositoryInfo {
+    public string RepositoryTypeName { get; set; }
+    public string VariableName { get; set; }
+}
+
+IDictionary<string, RepositoryInfo> _repositories;
+IDictionary<string, RepositoryInfo> Repositories {
+	get {
+		if (_repositories == null) {
+			var relatedEntities = ((IEnumerable)Model.RelatedEntities).OfType<RelatedEntityInfo>();
+			var relatedTypes = relatedEntities.Where(x => x.RelationType == RelationType.Parent).Select(x => x.RelatedEntityType).Distinct();
+			_repositories = relatedTypes.ToDictionary(
+				relatedType => relatedType.FullName,
+				relatedType => new RepositoryInfo { RepositoryTypeName = relatedType.Name + "Repository", VariableName = relatedType.Name.ToLower() + "Repository" }
+			); 
+			_repositories[((CodeType)Model.ModelType).FullName] = new RepositoryInfo { RepositoryTypeName = Model.Repository, VariableName = ((CodeType)Model.ModelType).Name.ToLower() + "Repository" };
+		}
+		return _repositories;
+	}
+}
+#>

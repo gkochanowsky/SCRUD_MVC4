@@ -1,0 +1,33 @@
+﻿@{
+	/* 
+	 *	© 2015 Florida Division of Emergency Management. All rights reserved.
+	 *	
+	 *	DESC: Persisted data for pagination/sorting postback.
+	 *	
+	 *	NOTE: Make sure to include this view in your sort parameters view.
+	 *	
+	 *	History
+	 *	================================================================================
+	 *	2015/08/05	G.K.	Created.
+	*/
+}
+@model DEM.Utilities.SearchDTO
+
+@{
+	Model.refreshAll = false;	
+}
+
+@Html.HiddenFor(model => model.Page)
+@Html.HiddenFor(model => model.recsPerPage)
+@Html.HiddenFor(model => model.PageRangeSize)
+@Html.HiddenFor(model => model.recCount)
+@Html.HiddenFor(model => model.sort)
+@Html.HiddenFor(model => model.sortDir)
+@Html.HiddenFor(model => model.FormView)
+@Html.HiddenFor(model => model.FormID)
+@Html.HiddenFor(model => model.ResultView)
+@Html.HiddenFor(model => model.refreshAll)
+@Html.HiddenFor(model => model.funcParentRefresh)
+@Html.HiddenFor(model => model.funcParentSelect)
+
+

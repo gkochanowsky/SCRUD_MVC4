@@ -1,0 +1,217 @@
+﻿<#@ Template Language="C#" HostSpecific="True" Inherits="DynamicTransform" #>
+<#@ Output extension="cshtml" #>
+<#@ assembly name="System.ComponentModel.DataAnnotations" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Data.Entity" #>
+<#@ assembly name="System.Data.Linq" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.ComponentModel.DataAnnotations" #>
+<#@ import namespace="System.Data.Linq.Mapping" #>
+<#@ import namespace="System.Data.Objects.DataClasses" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Reflection" #>
+<# 	
+	var viewDataType = (EnvDTE.CodeType) Model.ViewDataType;
+	var now = DateTime.Now;
+	var dt = now.ToShortDateString(); 
+	int cols = 1;
+	string projNamespace = viewDataType.FullName.Split('.')[0];
+#>
+@{
+/*
+	 
+
+	Desc: Partial view of record list to be used and refreshed by index
+
+	History
+	==============================================================================
+	<#= dt #>	Scaf	Created.
+*/
+}
+<# if(viewDataType != null) { #>
+@model IEnumerable<<#= viewDataType.FullName #>>
+
+<# } #>
+@{
+	var cntrlr =  this.ViewContext.RouteData.Values["Controller"].ToString();	// Controller
+	var dialog = "dialog-<#= Model.ViewDataTypeName.Replace("_", "-").ToLower() #>"; // Create, Edit, Delete dialog container.
+	var createAction = Url.Action("Create",  cntrlr, new { id = "" });
+	var editAction = Url.Action("Edit",  cntrlr, new { id = "" });
+	var deleteAction = Url.Action("Delete",  cntrlr, new { id = "" });
+
+	var details = "details-<#= Model.ViewDataTypeName.Replace("_", "-").ToLower() #>";
+	var detailsAction = Url.Action("Details",  cntrlr, new { id = "" });
+	var parentID = "null"; // Set this to appropriate value.
+
+<# if (!String.IsNullOrEmpty(Model.Layout)) { #>
+    Layout = "<#= Model.Layout #>";
+<# } #>
+}
+
+<h4><#= Model.ViewDataTypeName #></h4>
+<table class="GridTable">
+	<tr>
+<#
+List<ModelProperty> properties = GetModelProperties(Model.ViewDataType, true);
+foreach (ModelProperty property in properties) {
+    if (!property.IsPrimaryKey && !property.IsForeignKey) {
+		cols++;
+#>
+		<th>@Html.DisplayNameFor(model =>model.<#= property.Name #>)</th>
+<#
+    }
+}
+#>
+		<th><a href="#" onclick="return Open_<#= Model.ViewDataTypeName #>_Dialog(@parentID, '@createAction');">Create</a></th>
+	</tr>
+
+@if(Model.Count() > 0) {
+	foreach (var item in Model) {
+	<tr>
+<#  
+foreach (ModelProperty property in properties) {
+    if (!property.IsPrimaryKey && !property.IsForeignKey) {
+#>
+		<td>@<#= property.ValueExpression.Replace("Model.", "item.") #></td>
+<#
+    }
+}
+#>
+	<# if (!String.IsNullOrEmpty(Model.PrimaryKeyName)) { #>	
+		<td>
+			<a href="#" onclick="return Open_<#= Model.ViewDataTypeName #>_Dialog(@item.<#= Model.PrimaryKeyName #>, '@editAction');">Edit</a> |
+			<a href="#" onclick="return Open_<#= Model.ViewDataTypeName #>_Dialog(@item.<#= Model.PrimaryKeyName #>, '@deleteAction');">Delete</a>
+		</td>
+	<# } else { #>	
+		<td>
+			<a href="#" onclick="return Open_<#= Model.ViewDataTypeName #>_Dialog(@item.PrimaryKey, '@editAction');">Edit</a> |
+			<a href="#" onclick="return Open_<#= Model.ViewDataTypeName #>_Dialog(@item.PrimaryKey, '@deleteAction');">Delete</a>
+		</td>	
+	<# } #>		
+	</tr>	
+	}
+} else {
+	<tr><td colspan="<#= cols.ToString() #>" class="no-data">@<#= projNamespace #>.Models.GlobalConstants.NoData</td></tr>
+}
+</table>
+
+<script type="text/javascript">
+
+	function <#= Model.ViewDataTypeName #>_Details_OnLoad() {
+		$("#@dialog").dialog({
+			autoOpen: false,
+			modal: true,
+			width: 'auto',
+			height: 'auto',
+			close: function(event, ui) {
+				$(this).dialog("destroy").remove();
+			}
+		});
+	}
+
+	function Refresh_<#= Model.ViewDataTypeName #>_Details(parentID) {
+		OpenForm(parentID, "@details", "@detailsAction");
+		return false;
+	}
+
+    @* Open up a create/edit/delete dialog *@
+    function Open_<#= Model.ViewDataTypeName #>_Dialog(id, action) {
+        OpenForm(id, '@dialog', action);
+        <#= Model.ViewDataTypeName #>_Details_OnLoad();
+        return false;
+    }
+</script>
+
+<#+
+// Describes the information about a property on the model
+class ModelProperty {
+    public string Name { get; set; }
+    public string ValueExpression { get; set; }
+	public EnvDTE.CodeTypeRef Type { get; set; }
+    public bool IsPrimaryKey { get; set; }
+	public bool IsForeignKey { get; set; }
+	public bool IsReadOnly { get; set; }
+}
+
+// Change this list to include any non-primitive types you think should be eligible to be edited using a textbox
+static Type[] bindableNonPrimitiveTypes = new[] {
+    typeof(string),
+    typeof(decimal),
+    typeof(Guid),
+    typeof(DateTime),
+    typeof(DateTimeOffset),
+    typeof(TimeSpan),
+};
+
+// Call this to get the list of properties in the model. Change this to modify or add your
+// own default formatting for display values.
+List<ModelProperty> GetModelProperties(EnvDTE.CodeType typeInfo, bool includeUnbindableProperties) {
+    List<ModelProperty> results = GetEligibleProperties(typeInfo, includeUnbindableProperties);
+    
+    foreach (ModelProperty prop in results) {
+//        if (prop.Type.UnderlyingTypeIs<double>() || prop.Type.UnderlyingTypeIs<decimal>()) {
+//            prop.ValueExpression = "String.Format(\"{0:F}\", " + prop.ValueExpression + ")";
+//        }
+//        else if (prop.Type.UnderlyingTypeIs<DateTime>()) {
+//            prop.ValueExpression = "String.Format(\"{0:g}\", " + prop.ValueExpression + ")";
+//        }
+//		else
+		if(IsBindableType(prop.Type))
+		{
+			prop.ValueExpression = "Html.DisplayFor(_ => " + prop.ValueExpression + ")";
+		} 
+		else if (!IsBindableType(prop.Type)) {
+			prop.ValueExpression = GetValueExpression("Model." + prop.Name, (EnvDTE.CodeType)prop.Type.CodeType);
+		}
+    }
+
+    return results;
+}
+
+// Change this list to include the names of properties that should be selected to represent an entity as a single string
+static string[] displayPropertyNames = new[] { "Name", "Title", "LastName", "Surname", "Subject", "Count" };
+
+string GetValueExpression(string propertyExpression, EnvDTE.CodeType propertyType) {
+	if (propertyType != null) {
+		var chosenSubproperty = propertyType.DisplayColumnProperty() ?? propertyType.FindProperty(displayPropertyNames);
+		if (chosenSubproperty != null) {
+			var toStringSuffix = chosenSubproperty.Type.AsFullName == "System.String" ? "" : ".ToString()";
+			return String.Format("({0} == null ? \"None\" : {0}.{1}{2})", propertyExpression, chosenSubproperty.Name, toStringSuffix);
+		}
+	}
+	return "Html.DisplayTextFor(_ => " + propertyExpression + ").ToString()";
+//	return propertyExpression;
+}
+
+// Helper
+List<ModelProperty> GetEligibleProperties(EnvDTE.CodeType typeInfo, bool includeUnbindableProperties) {
+    List<ModelProperty> results = new List<ModelProperty>();
+	if (typeInfo != null) {
+		foreach (var prop in typeInfo.VisibleMembers().OfType<EnvDTE.CodeProperty>()) {
+			if (prop.IsReadable() && !prop.HasIndexParameters() && (includeUnbindableProperties || IsBindableType(prop.Type))) {
+				results.Add(new ModelProperty {
+					Name = prop.Name,
+					ValueExpression = "Model." + prop.Name,
+					Type = prop.Type,
+					IsPrimaryKey = Model.PrimaryKeyName == prop.Name,
+					IsForeignKey = ParentRelations.Any(x => x.RelationProperty == prop),
+					IsReadOnly = !prop.IsWriteable()
+				});
+			}
+		}
+	}
+
+    return results;
+}
+
+IEnumerable<RelatedEntityInfo> ParentRelations {
+	get { return ((IEnumerable)Model.RelatedEntities).OfType<RelatedEntityInfo>().Where(x => x.RelationType == RelationType.Parent); }
+}
+
+// Helper
+bool IsBindableType(EnvDTE.CodeTypeRef type) {
+    return type.UnderlyingIsPrimitive() || bindableNonPrimitiveTypes.Any(x => type.UnderlyingTypeIs(x));
+}
+#>

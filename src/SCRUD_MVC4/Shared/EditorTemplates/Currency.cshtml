@@ -1,0 +1,6 @@
+﻿@model decimal?
+@{
+	var curr = Model.HasValue ? Model.Value : 0.00M;
+	var str = curr > 0 ? string.Format("{0:0.00}", curr) : "";
+}
+@Html.TextBox("", str, new { @class="moneyfield" })

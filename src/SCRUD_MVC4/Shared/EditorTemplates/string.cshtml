@@ -1,0 +1,22 @@
+﻿@*
+	© 2013 Florida Agency for Health Care Administration. All rights reserved.
+
+	DESC: Editor Template to apply style to fields set with custom attribute that
+			will be rendered as a string.
+	History
+	================================================================================================
+	2013/06/14	G.K.	Created.
+*@
+
+@model String
+
+@if (ViewData.ModelMetadata.AdditionalValues.ContainsKey("style"))
+{
+	
+	var styleStr = ViewData.ModelMetadata.AdditionalValues["style"];
+	@Html.TextBoxFor(model => model, new { style = styleStr })
+}
+else
+{ 
+	@Html.TextBoxFor(model => model)
+}

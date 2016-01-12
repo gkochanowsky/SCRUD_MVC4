@@ -1,0 +1,27 @@
+@{
+/*
+ *	
+ *
+ *	DESC: Paginated View for Search Results for data type - Person
+ *
+ *	NOTES: Created with MVC Scaffolding https://www.nuget.org/packages/MvcScaffolding/
+ *			using a custom scaffolder called "Search" with the Package Manager Console command line:  
+ *
+ *				Scaffold Search Person -DbContextType PersonContext -ControllerName Person -Force
+ *
+ *	History
+ *	==============================================================================
+ *	2016/01/11	Scaf	Created.
+ *
+*/
+}
+@model SCRUD_MVC4.Models.Search_PersonDTO
+
+@if (Model.results != null)
+{
+	<h3 style="margin-bottom:5px;">Search Results</h3>	
+	@Html.Partial("Paginator", Model)
+	@Html.Partial("Results", Model)
+	@Html.Partial("Paginator", Model)
+}
+

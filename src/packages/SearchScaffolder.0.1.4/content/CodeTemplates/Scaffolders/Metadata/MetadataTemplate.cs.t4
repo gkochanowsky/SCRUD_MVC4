@@ -1,0 +1,98 @@
+<#@ Template Language="C#" HostSpecific="True" Inherits="DynamicTransform" #>
+<#@ Output extension="cs" #>
+<#@ assembly name="System.ComponentModel.DataAnnotations" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Data.Entity" #>
+<#@ assembly name="System.Data.Linq" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.ComponentModel.DataAnnotations" #>
+<#@ import namespace="System.Data.Linq.Mapping" #>
+<#@ import namespace="System.Data.Objects.DataClasses" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="EnvDTE" #>
+<# 
+	var now = DateTime.Now;
+	var dt = now.ToShortDateString(); 
+	var modelType = (CodeType)Model.ModelType;
+	var name = modelType.Name;
+
+	bool includeUnbindableProperties = false;
+    var isObjectContext = modelType.IsAssignableTo<System.Data.Objects.ObjectContext>(); // ((CodeType)Model.DbContextType).IsAssignableTo<System.Data.Objects.ObjectContext>();
+
+
+	List<string> props = new List<string>();
+	foreach (var prop in modelType.VisibleMembers().OfType<EnvDTE.CodeProperty>()) {
+		if (prop.IsReadable() && !prop.HasIndexParameters() && (includeUnbindableProperties || IsBindableType(prop.Type))) {
+			props.Add(prop.Name);
+		}
+	}
+
+	var metaName = Model.ModelTypeName + "_Metadata";
+#>
+/*
+ *	© <#= now.Year.ToString() #> Florida Division of Emergency Management. All rights reserved.
+ *
+ *	DESC: Adds Metadata class for annotation
+ *
+ *	History
+ *	==============================================================================
+ *	<#= dt #>	Scaf	Created.
+ *
+*/
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.ComponentModel.DataAnnotations;
+
+namespace <#= Model.Namespace #>.Models
+{ 
+	[MetadataType(typeof(<#= metaName #>))]
+    public partial class <#= Model.ModelTypeName #>
+    {
+		// Partial class linking MetadataType
+
+<#
+foreach (var n in props) {
+#>
+		public const string <#= n #>_Display = "<#= n #>"; 
+<#
+}
+#>
+	}
+
+    public partial class <#= metaName #>    {
+		// Decorate metadata properties with attributes.
+<#
+foreach (var n in props) {
+#>
+		[Display(Name = <#= Model.ModelTypeName #>.<#= n #>_Display)]
+		public object <#= n #>  { get; set; }
+<#
+}
+#>
+	}
+}
+
+<#+
+// Change this list to include any non-primitive types you think should be eligible to be edited using a textbox
+static Type[] bindableNonPrimitiveTypes = new[] {
+    typeof(string),
+    typeof(decimal),
+    typeof(Guid),
+    typeof(DateTime),
+    typeof(DateTimeOffset),
+    typeof(TimeSpan),
+};
+
+// Helper
+bool IsBindableType(EnvDTE.CodeTypeRef type) {
+    return type.UnderlyingIsPrimitive() || bindableNonPrimitiveTypes.Any(x => type.UnderlyingTypeIs(x));
+}
+#>
+

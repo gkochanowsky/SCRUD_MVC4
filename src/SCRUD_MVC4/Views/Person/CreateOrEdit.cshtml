@@ -1,0 +1,90 @@
+@{
+/*
+ *	
+ *
+ *	DESC: CreateOrEdit View for Search DTO - Search_PersonDTO
+ *
+ *	NOTES: Created with MVC Scaffolding https://www.nuget.org/packages/MvcScaffolding/
+ *			using a custom scaffolder called "Search" with the Package Manager Console command line:  
+ *
+ *				Scaffold Search Person -DbContextType PersonContext -ControllerName Person -Force
+ *
+ *	History
+ *	==============================================================================
+ *	2016/01/11	Scaf	Created.
+*/
+}
+@model SCRUD_MVC4.Models.Person
+@{
+	string dialog =  string.IsNullOrWhiteSpace(Model.formView) ? "person-dlg" : Model.formView; // Container Name
+	string funcRefresh = string.IsNullOrWhiteSpace(Model.funcRefresh as string) ? null : Model.funcRefresh as string;
+	string funcSave = "Save_" + dialog.Replace("-", "_");
+	string formID = dialog + "-frm";
+	string viewName = Model.PersonId == 0 ? "Create" : "Edit";
+	int parentID = 0; // Set this appropriatly
+}
+<h2>@viewName</h2>
+@using (Html.BeginForm("CreateOrEdit", "Person", FormMethod.Post, new { id = formID, name = formID })) {
+    @Html.ValidationSummary(true)
+   <fieldset class="app-fieldset popup-width-std">
+        <legend>Person</legend>
+
+		@Html.Hidden("IsValid", @ViewData.ModelState.IsValid)
+		@Html.HiddenFor(_ => _.PersonId)
+		@Html.HiddenFor(_ => _.formView)
+		@Html.HiddenFor(_ => _.funcRefresh)
+
+		<div class="editor-row">
+			<div class="editor-column-4 label editor-label">
+				@Html.LabelFor(_ => _.FirstName)
+			</div>
+			<div class="editor-column-w editor-field">
+				@Html.EditorFor(_ => _.FirstName)<br />
+				@Html.ValidationMessageFor(_ => _.FirstName)
+			</div>
+		</div>
+
+		<div class="editor-row">
+			<div class="editor-column-4 label editor-label">
+				@Html.LabelFor(_ => _.LastName)
+			</div>
+			<div class="editor-column-w editor-field">
+				@Html.EditorFor(_ => _.LastName)<br />
+				@Html.ValidationMessageFor(_ => _.LastName)
+			</div>
+		</div>
+
+		<div class="editor-row">
+			<div class="editor-column-4 label editor-label">
+				@Html.LabelFor(_ => _.DoB)
+			</div>
+			<div class="editor-column-w editor-field">
+				@Html.EditorFor(_ => _.DoB)<br />
+				@Html.ValidationMessageFor(_ => _.DoB)
+			</div>
+		</div>
+
+		<div class="editor-row">
+			<div class="editor-column-4 label editor-label">
+				@Html.LabelFor(_ => _.GenderID)
+			</div>
+			<div class="editor-column-w editor-field">
+				@Html.EditorFor(_ => _.GenderID)<br />
+				@Html.ValidationMessageFor(_ => _.GenderID)
+			</div>
+		</div>
+
+        <p style="text-align:center;">
+			<input type="button" value="Save" onclick="return @(funcSave)(this);" />
+   			<input type="reset" value="Reset" />
+		</p>
+    </fieldset>
+}
+
+<script type="text/javascript">
+    function @(funcSave) (btn) {
+        PostForm('@dialog', '@formID', @if(funcRefresh == null) { <text>null</text> } else { <text>function () { @funcRefresh ('@parentID'); }</text> }, function () { btn.disabled = false; }, function () { btn.disabled = true; });
+        return false;
+    }
+</script>
+

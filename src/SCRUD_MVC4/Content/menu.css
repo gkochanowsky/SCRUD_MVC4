@@ -1,0 +1,56 @@
+﻿/*******************************************
+	Dropdown Navigation Menu
+*******************************************/
+#menu-dropdown-container			{	display: block;
+                        			/* 	top: -30px; */
+                        			 	position:relative; }
+#menu-dropdown a					{	text-decoration: none; font-size: .9em } /* all menu-dropdown links have no underline */
+#menu-dropdown ul					{	list-style: none; width:100%; visibility: hidden; } /* all nested menus have no bullets and are initially hidden */
+
+ul#menu-dropdown li:hover > ul		{	visibility: visible; } /* mousing over a list item with a nested menu will show the menu */
+ul#menu-dropdown					{/*	position: relative; */
+                					 	list-style:none; 
+                					 	padding: 0 0 0 0; 
+										top: -16px;  
+                					 	font-size:1.6em; 
+                					 	float: right; } /* main menu has no bullets or padding */
+ul#menu-dropdown li					{	float: left;  
+                   					 	margin-left:5px; 
+                   					 	margin-right:5px; 
+                   					 /*	font-size:1.3em; */
+                   					 	font-weight:bold; 
+                   					 	color:Gray;} /* main menu items are horizontal (remove to make vertical) */
+ul#menu-dropdown li.hover,
+ul#menu-dropdown li:hover			{	background: #D6E5F6; color: black; position: relative; } /* mousing over a main list item changes background and text color */
+ul#menu-dropdown li a				{	display: block; 
+							/*			padding: 9px 12px; */
+							/*			border-right: 1px solid #D6E5F6; */
+										color: white; } /* main menu item links have 25px padding to right and a right border */
+ul#menu-dropdown li:last-child a	{	border-right: none; } /* last main menu item has no right border */
+ul#menu-dropdown ul 				{	width: auto; 
+								/*		border:1px solid black; */
+										box-shadow: 3px 3px 1px #ccc;
+										-moz-box-shadow: 3px 3px 1px #ccc;
+										-webkit-box-shadow: 3px 3px 1px #ccc;
+										visibility:hidden; 
+										position: absolute; 
+										top: 100%; 
+										padding:0; } /* first level nested menu has a border and shadow and docks directly under the parent item */
+ul#menu-dropdown ul li 				{	float: none;
+										position:relative;
+										cursor:pointer;
+										background: #6D98FC;
+										border-bottom: 0px; } /* first level nested menu item uses pointer cursor with white background and is vertical */
+ul#menu-dropdown ul li a			{ border-right: none; width: 100%; white-space:nowrap; } /* first level nested menu item has no right border */
+ul#menu-dropdown ul ul 				{ position: absolute; left: 100%; top: 0; }
+ul#menu-dropdown ul ul li			{ background: white; }
+ul#menu-dropdown a:active			{ color: #ffa500; }
+ul#menu-dropdown li.hover a			{ color: black; }
+
+div#menu-user						{ padding: 10px; font-size: .8em; float:right; color:white;}
+div#menu-user span					{ font-weight: bold; margin-right: 15px;}
+
+.toggle-button						{ color:#0077A2; font-size: .7em; margin-bottom: 5px; margin-left:10px; cursor:pointer;}
+.toggle-button:hover 				{ color:#FFA340; }
+
+/********************************	END NAVIGATION STYLES	********************************/

@@ -1,0 +1,38 @@
+@{
+/*
+ *	
+ *
+ *	DESC: Details View for to work with Search - Search_PersonDTO
+ *
+ *	NOTES: Created with MVC Scaffolding https://www.nuget.org/packages/MvcScaffolding/
+ *			using a custom scaffolder called "Search" with the Package Manager Console command line:  
+ *
+ *				Scaffold Search Person -DbContextType PersonContext -ControllerName Person -Force
+ *
+ *	History
+ *	==============================================================================
+ *	2016/01/11	Scaf	Created.
+*/
+}
+@model SCRUD_MVC4.Models.Person
+
+<fieldset class="app-fieldset">
+    <legend>Person</legend>
+	<div class="editor-row">
+		<div class="editor-column-4 label display-label">@Html.DisplayNameFor(model => model.FirstName)</div>
+		<div class="editor-column-w display-field">@Html.DisplayFor(model => model.FirstName)</div>
+	</div>
+	<div class="editor-row">
+		<div class="editor-column-4 label display-label">@Html.DisplayNameFor(model => model.LastName)</div>
+		<div class="editor-column-w display-field">@Html.DisplayFor(model => model.LastName)</div>
+	</div>
+	<div class="editor-row">
+		<div class="editor-column-4 label display-label">@Html.DisplayNameFor(model => model.DoB)</div>
+		<div class="editor-column-w display-field">@Html.DisplayFor(model => model.DoB)</div>
+	</div>
+	<div class="editor-row">
+		<div class="editor-column-4 label display-label">@Html.DisplayNameFor(model => model.GenderID)</div>
+		<div class="editor-column-w display-field">@Html.DisplayFor(model => model.GenderID)</div>
+	</div>
+</fieldset>
+

@@ -1,0 +1,109 @@
+<#@ Template Language="C#" HostSpecific="True" Inherits="DynamicTransform" #>
+<#@ Output Extension="cshtml" #>
+<#@ assembly name="System.ComponentModel.DataAnnotations" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Data.Entity" #>
+<#@ assembly name="System.Data.Linq" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.ComponentModel.DataAnnotations" #>
+<#@ import namespace="System.Data.Linq.Mapping" #>
+<#@ import namespace="System.Data.Objects.DataClasses" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="EnvDTE" #>
+<# 
+	var now = DateTime.Now;
+	var dt = now.ToString("yyyy/MM/dd"); 
+	var modelType = (CodeType)Model.ModelType;
+	var searchModelType = (CodeType)Model.SearchModelType;
+	var name = modelType.Name;
+	var searchDtoName = "Search_" + name + "DTO";
+	var searchDTOFullName = modelType.FullName.Replace(name, "") + searchDtoName;
+	var modelViewName = name.Replace("_", "-").ToLower();
+
+	string cpr = "(c) " + now.Year.ToString();
+#>
+@{
+/*
+ *	<#= cpr #> 
+ *
+ *	DESC: Paginated View for Search Results for data type - <#= name #>
+ *
+ *	NOTES: Created with MVC Scaffolding https://www.nuget.org/packages/MvcScaffolding/
+ *			using a custom scaffolder called "Search" with the Package Manager Console command line:  
+ *
+ *				Scaffold Search <#= name #> -DbContextType <#= Model.DbContextName #> -ControllerName <#= Model.ControllerName #> -Force
+ *
+ *	History
+ *	==============================================================================
+ *	<#= dt #>	Scaf	Created.
+ *
+*/
+}
+<# if(modelType != null) { #>
+@model <#= searchDTOFullName #>
+<# } #>
+
+@if (Model.results != null)
+{
+	<h3 style="margin-bottom:5px;">Search Results</h3>	
+	@Html.Partial("Paginator", Model)
+	@Html.Partial("Results", Model)
+	@Html.Partial("Paginator", Model)
+}
+
+<#+
+class ModelProperty {
+	public string Name { get; set; }
+	public string ValueExpression { get; set; }
+	public EnvDTE.CodeTypeRef Type { get; set; }
+	public bool IsPrimaryKey { get; set; }
+	public bool IsForeignKey { get; set; }
+	public bool IsReadOnly { get; set; }
+	public bool IsNullable { get; set; }
+}
+
+List<ModelProperty> GetModelProperties(EnvDTE.CodeType typeInfo) {
+	List<ModelProperty> results = GetEligibleProperties(typeInfo);
+
+	// Update ValueExpression here.
+
+	return results;
+}
+
+List<ModelProperty> GetEligibleProperties(EnvDTE.CodeType typeInfo)  {
+	List<ModelProperty> results = new List<ModelProperty>();
+
+	if(typeInfo != null) {
+		foreach (var prop in typeInfo.VisibleMembers().OfType<EnvDTE.CodeProperty>()) {
+			if (prop.IsReadable() && !prop.HasIndexParameters() && IsBindableType(prop.Type)) {
+				results.Add(new ModelProperty {
+					Name = prop.Name.ToString(),
+					Type = prop.Type,
+					IsNullable = prop.Type.AsFullName.Contains(".Nullable<") // .IsGenericType && prop.GetGenericTypeDefinition() == typeof(Nullable<>)
+				});
+			}
+		}
+	}
+
+	return results;
+}
+
+// Change this list to include any non-primitive types you think should be eligible to be edited using a textbox
+static Type[] bindableNonPrimitiveTypes = new[] {
+    typeof(string),
+    typeof(decimal),
+    typeof(Guid),
+    typeof(DateTime),
+    typeof(DateTimeOffset),
+    typeof(TimeSpan),
+};
+
+// Helper
+bool IsBindableType(EnvDTE.CodeTypeRef type) {
+    return type.UnderlyingIsPrimitive() || bindableNonPrimitiveTypes.Any(x => type.UnderlyingTypeIs(x));
+}
+#>

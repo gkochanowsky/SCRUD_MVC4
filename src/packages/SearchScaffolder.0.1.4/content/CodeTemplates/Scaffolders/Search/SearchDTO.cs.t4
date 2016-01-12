@@ -1,0 +1,140 @@
+<#@ Template Language="C#" HostSpecific="True" Inherits="DynamicTransform" #>
+<#@ Output Extension="cs" #>
+<#@ assembly name="System.ComponentModel.DataAnnotations" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Data.Entity" #>
+<#@ assembly name="System.Data.Linq" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.ComponentModel.DataAnnotations" #>
+<#@ import namespace="System.Data.Linq.Mapping" #>
+<#@ import namespace="System.Data.Objects.DataClasses" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="EnvDTE" #>
+<# 
+	var now = DateTime.Now;
+	var dt = now.ToString("yyyy/MM/dd"); 
+	var modelType = (CodeType)Model.ModelType;
+	var name = modelType.Name;
+	var prps = GetModelProperties(modelType);
+	string cpr = "(c) " + now.Year.ToString();
+
+	List<string> ignore = new List<string>() { "formView", "funcRefresh" };
+#>
+/*
+ *	<#= cpr #> Florida Division of Emergency Management. All rights reserved.
+ *
+ *	DESC: Search DTO Class for data type - <#= name #>
+ *
+ *	NOTES: Created with MVC Scaffolding https://www.nuget.org/packages/MvcScaffolding/
+ *			using a custom scaffolder called "Search" with the Package Manager Console command line:  
+ *
+ *				Scaffold Search <#= name #> -DbContextType <#= Model.DbContextName #> -ControllerName <#= Model.ControllerName #> -Force
+ *
+ *	History
+ *	==============================================================================
+ *	<#= dt #>	Scaf	Created.
+ *
+*/
+
+using DEM.Utilities;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Web;
+
+namespace <#= Model.Namespace #>.Models
+{ 
+    public class Search_<#= Model.ModelTypeName #>DTO : SearchDTO
+    {
+		public Search_<#= Model.ModelTypeName #>DTO()
+			: base("<#= Model.ModelTypeName.ToLower().Replace("_", "-") #>_srch")
+		{
+			sortDir = "ASC";
+			sort = <#= Model.ModelTypeName #>.<#= Model.PrimaryKey #>_Display;
+			recsPerPage = 10;
+		}
+
+		/// <summary>
+		/// Field ordering functions used for paginated column sorting.
+		/// </summary>
+		public readonly IDictionary<string, Func<IQueryable<<#= Model.ModelTypeName #>>, bool, IOrderedQueryable<<#= Model.ModelTypeName #>>>>
+		Orderings = new Dictionary<string, Func<IQueryable<<#= Model.ModelTypeName #>>, bool, IOrderedQueryable<<#= Model.ModelTypeName #>>>>
+									{
+<# foreach (var n in prps) { 
+		if(!ignore.Contains(n.Name)) { #>
+										{<#= Model.ModelTypeName #>.<#= n.Name #>_Display, SearchDTO.CreateOrderingFunc<<#= Model.ModelTypeName #>,<#= n.Type.AsFullName #>>(p=>p.<#= n.Name #>)},
+<#		}
+   } #>
+									};
+
+		public List<<#= Model.ModelTypeName #>> results { get; set; }
+
+		// Search Terms with attributes
+		[Display(Name = "First Term")]
+		public string Term1 { get; set; }
+		[Display(Name = "Second Term")]
+		public int? Term2 { get; set; }
+		[Display(Name = "Third Term"), DataType(DataType.Date)]
+		public DateTime? Term3 { get; set; }
+		[Display(Name = "Fourth Term"), DataType(DataType.Currency)]
+		public decimal? Term4 { get; set; }
+	}
+}
+
+<#+
+class ModelProperty {
+	public string Name { get; set; }
+	public string ValueExpression { get; set; }
+	public EnvDTE.CodeTypeRef Type { get; set; }
+	public bool IsPrimaryKey { get; set; }
+	public bool IsForeignKey { get; set; }
+	public bool IsReadOnly { get; set; }
+	public bool IsNullable { get; set; }
+}
+
+List<ModelProperty> GetModelProperties(EnvDTE.CodeType typeInfo) {
+	List<ModelProperty> results = GetEligibleProperties(typeInfo);
+
+	// Update ValueExpression here.
+
+	return results;
+}
+
+List<ModelProperty> GetEligibleProperties(EnvDTE.CodeType typeInfo)  {
+	List<ModelProperty> results = new List<ModelProperty>();
+
+	if(typeInfo != null) {
+		foreach (var prop in typeInfo.VisibleMembers().OfType<EnvDTE.CodeProperty>()) {
+			if (prop.IsReadable() && !prop.HasIndexParameters() && IsBindableType(prop.Type)) {
+				results.Add(new ModelProperty {
+					Name = prop.Name.ToString(),
+					Type = prop.Type,
+					IsNullable = prop.Type.AsFullName.Contains(".Nullable<") // .IsGenericType && prop.GetGenericTypeDefinition() == typeof(Nullable<>)
+				});
+			}
+		}
+	}
+
+	return results;
+}
+
+// Change this list to include any non-primitive types you think should be eligible to be edited using a textbox
+static Type[] bindableNonPrimitiveTypes = new[] {
+    typeof(string),
+    typeof(decimal),
+    typeof(Guid),
+    typeof(DateTime),
+    typeof(DateTimeOffset),
+    typeof(TimeSpan),
+};
+
+// Helper
+bool IsBindableType(EnvDTE.CodeTypeRef type) {
+    return type.UnderlyingIsPrimitive() || bindableNonPrimitiveTypes.Any(x => type.UnderlyingTypeIs(x));
+}
+#>

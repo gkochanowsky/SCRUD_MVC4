@@ -1,0 +1,6 @@
+﻿@model DateTime?
+
+@{
+	var dateStr = Model.HasValue ? (Model.Value > DateTime.MinValue ? string.Format("{0:d}", Model.Value.Date) : "") : "";
+}
+<div class="datefielddiv">@Html.TextBox("", dateStr, new { @class = "datefield" })</div>

@@ -1,0 +1,85 @@
+<#@ Template Language="C#" HostSpecific="True" Inherits="DynamicTransform" #>
+<#@ Output Extension="cshtml" #>
+<#@ assembly name="System.ComponentModel.DataAnnotations" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Data.Entity" #>
+<#@ assembly name="System.Data.Linq" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.ComponentModel.DataAnnotations" #>
+<#@ import namespace="System.Data.Linq.Mapping" #>
+<#@ import namespace="System.Data.Objects.DataClasses" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="EnvDTE" #>
+<# 
+	var now = DateTime.Now;
+	var dt = now.ToString("yyyy/MM/dd"); 
+	var modelType = (CodeType)Model.ModelType;
+	var name = modelType.Name;
+	var modelViewName = name.Replace("_", "-").ToLower();
+
+	string cpr = "(c) " + now.Year.ToString();
+#>
+@{
+/*
+ *	<#= cpr #> 
+ *
+ *	DESC: Index view for testing search functionality for data type - <#= name #>
+ *
+ *	NOTES: Created with MVC Scaffolding https://www.nuget.org/packages/MvcScaffolding/
+ *			using a custom scaffolder called "Search" with the Package Manager Console command line:  
+ *
+ *				Scaffold Search <#= name #> -DbContextType <#= Model.DbContextName #> -ControllerName <#= Model.ControllerName #> -Force
+ *
+ *	History
+ *	==============================================================================
+ *	<#= dt #>	Scaf	Created.
+ *
+*/
+}
+
+@*
+@Html.Action("Search", new  { showAll = true })
+
+	***** Uncomment this and delete this line and below to make this a search page instead of a search popup. 
+
+	If you are only using the search popup you may remove the index action and view from the project.
+*@
+
+@{
+	var formView = "<#= modelViewName #>-idx";
+	var selectFunc = "Update_" + formView.Replace("-", "_") + "_OnSelect";
+	var searchAction = Url.Action("Search", "<#= Model.ControllerName #>", new { id = "**", formView = formView, funcSelect = selectFunc, showAll = true });
+}
+
+<h2>Test <#= Model.ControllerName #> Search</h2>
+<input id="selectID" type="hidden" value="" />
+
+<table>
+	<tr>
+		<th>Parent ID:</th>
+		<td><input id ="<#= modelViewName #>-parent-id" type="text" value="" /></td>
+		<td><a href="#" onclick="return <#= name #>_Search_Index('@searchAction');" >Search</a></td>
+	</tr>
+	<tr>
+		<th>Selected ID:</th>
+		<td><div id="select-id-display"></div></td>
+		<td></td>
+	</tr>
+</table>
+
+<script type="text/javascript">
+	function <#= name #>_Search_Index (action)
+	{
+		var parentID = $("#<#= modelViewName #>-parent-id").val();
+		return OpenForm(null, '@formView', action.replace("**", parentID));
+	}
+
+	function @(selectFunc)(selectID) {
+		$("#selectID").attr('value', selectID);
+		$("#select-id-display").html(selectID);
+	}
+</script>

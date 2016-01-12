@@ -1,0 +1,6 @@
+﻿@model DateTime?
+
+@{
+	var dateStr = Model.HasValue ? (Model.Value > DateTime.MinValue ? string.Format("{0:MM/dd/yyyy hh:mm tt}", Model.Value.Date) : "") : "";
+}
+@dateStr

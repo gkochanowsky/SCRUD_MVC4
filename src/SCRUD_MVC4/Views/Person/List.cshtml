@@ -1,0 +1,92 @@
+@{
+/*
+ *	
+ *
+ *	Desc: Partial view of record list
+ *
+ *	NOTES: Created with MVC Scaffolding https://www.nuget.org/packages/MvcScaffolding/
+ *			using a custom scaffolder called "Search" with the Package Manager Console command line:  
+ *
+ *				Scaffold Search Person -DbContextType PersonContext -ControllerName Person -Force
+ *
+ *	History
+ *	==============================================================================
+ *	2016/01/11	Scaf	Created.
+*/
+}
+@model IEnumerable<SCRUD_MVC4.Models.Person>
+@using SCRUD_MVC4.Models
+
+@{
+	int parentID = (ViewBag.ParentID as int?).GetValueOrDefault();
+	string parentIDstr = (parentID >= 0 ? "" : "m") + System.Math.Abs(parentID);
+	string formView = ViewBag.formView != null ? (ViewBag.formView as string).ToLower().Replace("_", "-") : "";
+	string funcParentRefresh = ViewBag.funcRefresh != null ? (ViewBag.funcRefresh as string) : "";
+	string funcRefresh = "Refresh_" + formView.Replace("-", "_");
+	var dialog = formView + "-dlg"; // Create, Edit, Delete dialog container.
+
+	var reloadFunc = !string.IsNullOrWhiteSpace(funcRefresh) ? ", function () { " + funcRefresh + "(); }" : "";
+	var selectFunc = "Update_" + formView.Replace("-", "_") + "_OnSelect";
+	var openDlgFunc = "Open_" + dialog.Replace("-", "_");
+
+	var addAction = Url.Action("Search", "Person", new { id = parentID, formView = dialog, funcRefresh = funcRefresh, funcSelect = selectFunc, showAll = true });
+	var editAction = Url.Action("CreateOrEdit", "Person", new { id = "**", Version = parentID, formView = dialog, funcRefresh = funcRefresh });
+	var deleteAction = Url.Action("Delete", "Person", new { id = "**", formView = dialog, funcRefresh = funcRefresh });
+
+	var reloadAction = Url.Action("List", "Person", new { id = parentID, formView = formView });
+}
+
+<table class="GridTable" style="text-align:left;">
+	<tr>
+		<th>@Html.DisplayNameFor(_ => _.formView)</th>
+		<th>@Html.DisplayNameFor(_ => _.funcRefresh)</th>
+		<th>@Html.DisplayNameFor(_ => _.PersonId)</th>
+		<th>@Html.DisplayNameFor(_ => _.FirstName)</th>
+		<th>@Html.DisplayNameFor(_ => _.LastName)</th>
+		<th>@Html.DisplayNameFor(_ => _.DoB)</th>
+		<th>@Html.DisplayNameFor(_ => _.GenderID)</th>
+		<th><a href="#" onclick="return @(openDlgFunc)(null, '@addAction');">Add</a></th>
+	</tr>
+
+@if(Model.Count() > 0) {
+	foreach (var item in Model) {
+	<tr>
+		<td>@Html.DisplayFor(_ => item.formView)</td>
+		<td>@Html.DisplayFor(_ => item.funcRefresh)</td>
+		<td>@Html.DisplayFor(_ => item.PersonId)</td>
+		<td>@Html.DisplayFor(_ => item.FirstName)</td>
+		<td>@Html.DisplayFor(_ => item.LastName)</td>
+		<td>@Html.DisplayFor(_ => item.DoB)</td>
+		<td>@Html.DisplayFor(_ => item.GenderID)</td>
+		
+		<td style="text-align:center;">
+			<a href="#" onclick="return @(openDlgFunc)(@item.PersonId, '@editAction');">Edit</a> |
+			<a href="#" onclick="return @(openDlgFunc)(@item.PersonId, '@deleteAction');">Delete</a>
+		</td>
+			
+	</tr>	
+	}
+} else {
+	<tr><td colspan="8" class="no-data">@SCRUD.Models.GlobalConstants.NoData</td></tr>
+}
+</table>
+
+<script type="text/javascript">
+	function @(funcRefresh)(parentID) {
+		OpenForm(null, '@formView', '@reloadAction');
+@if(!string.IsNullOrWhiteSpace(funcParentRefresh)) {
+		@(funcParentRefresh + "(parentID);")
+}
+		return false;
+	}
+
+	@* Open up a create/edit/delete dialog *@
+	function @(openDlgFunc)(id, action) {
+		OpenForm(null, '@dialog', action.replace("**", id));
+		return false;
+	}
+
+	function @(selectFunc)(id) {
+		alert("selected: " + id);
+	}
+</script>

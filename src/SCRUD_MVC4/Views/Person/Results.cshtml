@@ -1,0 +1,92 @@
+@{
+/*
+ *	
+ *
+ *	DESC: View for Search Results for data type - Person
+ *
+ *	NOTES: Created with MVC Scaffolding https://www.nuget.org/packages/MvcScaffolding/
+ *			using a custom scaffolder called "Search" with the Package Manager Console command line:  
+ *
+ *				Scaffold Search Person -DbContextType PersonContext -ControllerName Person -Force
+ *
+ *	History
+ *	==============================================================================
+ *	2016/01/11	Scaf	Created.
+ *
+*/
+}
+@model SCRUD_MVC4.Models.Search_PersonDTO
+@using SCRUD_MVC4.Models
+@{
+	int parentID = 0; // Set this to appropriate value.
+	var createAction = Url.Action("CreateOrEdit", "Person", new { id = "", formView = Model.DialogView, funcRefresh = Model.funcRefresh });
+	var editAction = Url.Action("CreateOrEdit",  "Person", new { id = "**", formView = Model.DialogView, funcRefresh = Model.funcRefresh });
+	var deleteAction = Url.Action("Delete",  "Person", new { id = "**", formView = Model.DialogView, funcRefresh = Model.funcRefresh });
+    
+	var entity = new Person();
+}
+
+<table class="GridTable" style="text-align:left;">
+	<tr>
+@if(Model.hasSelect) {
+		<th></th> }
+		<th></th>
+		<th><a href="#" onclick="SortSearchResults('@Html.DisplayNameFor(_ => entity.PersonId)', '@Model.FormID'); return false;">@Html.DisplayNameFor(_ => entity.PersonId)</a></th>
+		<th><a href="#" onclick="SortSearchResults('@Html.DisplayNameFor(_ => entity.FirstName)', '@Model.FormID'); return false;">@Html.DisplayNameFor(_ => entity.FirstName)</a></th>
+		<th><a href="#" onclick="SortSearchResults('@Html.DisplayNameFor(_ => entity.LastName)', '@Model.FormID'); return false;">@Html.DisplayNameFor(_ => entity.LastName)</a></th>
+		<th><a href="#" onclick="SortSearchResults('@Html.DisplayNameFor(_ => entity.DoB)', '@Model.FormID'); return false;">@Html.DisplayNameFor(_ => entity.DoB)</a></th>
+		<th><a href="#" onclick="SortSearchResults('@Html.DisplayNameFor(_ => entity.GenderID)', '@Model.FormID'); return false;">@Html.DisplayNameFor(_ => entity.GenderID)</a></th>
+        <th><a href="#" onclick="return @(Model.funcOpen)(null, '@createAction');">Create</a></th>
+	</tr>
+
+@if (Model.results.Count() > 0)
+{
+	foreach (var item in Model.results)
+	{
+		string toggleID = (Model.FormView + "-tgl-" + item.PersonId).ToLower().Replace("_", "-");
+		string rowID = (Model.FormView + "-" + item.PersonId).ToLower().Replace("_", "-");
+		var action = Url.Action("Details", "Person", new { id = item.PersonId });
+
+	<tr id="@rowID">
+@if(Model.hasSelect) {
+		<td><a href="#" onclick="return @(Model.funcSelect)(@item.PersonId);" style="margin-right:5px;margin-left:5px;">Select</a></td> }
+		<td style="width:1.5em;"><a title="Show/Hide Details" id="@toggleID" href="#" onclick="Toggle(null, '@toggleID', '@action', '@rowID');return false;" class="toggle-link-show">[show]</a></td>
+		<td>@Html.DisplayFor(_ => item.PersonId)</td>
+		<td>@Html.DisplayFor(_ => item.FirstName)</td>
+		<td>@Html.DisplayFor(_ => item.LastName)</td>
+		<td>@Html.DisplayFor(_ => item.DoB)</td>
+		<td>@Html.DisplayFor(_ => item.GenderID)</td>
+		<td style="text-align:center;">
+			<a href="#" onclick="return @(Model.funcOpen)(@item.PersonId, '@editAction');">Edit</a> |
+			<a href="#" onclick="return @(Model.funcOpen)(@item.PersonId, '@deleteAction');">Delete</a>
+		</td>
+	</tr>	
+	}
+} else {
+	<tr><td colspan="7" class="no-data">@SCRUD.Models.GlobalConstants.NoData</td></tr>
+}
+</table>
+
+<script type="text/javascript">
+	function @(Model.funcRefresh)(parentID) {
+		LoadSearchResults(null, '@Model.FormID');
+@if(!string.IsNullOrWhiteSpace(Model.funcParentRefresh)) {
+		@(Model.funcParentRefresh + "(parentID);"); }
+		return false;
+	}
+
+	function @(Model.funcOpen)(id, action) {
+		OpenForm(null, '@Model.DialogView', action.replace("**", id));
+		return false;
+	}
+
+@if (Model.hasSelect)
+{ <text>
+	function @(Model.funcSelect)(id) {
+		@(Model.funcParentSelect)(id);
+		$("#@Model.FormView").dialog('close');
+		return false;
+	} </text>
+}
+</script>
+
